@@ -3,11 +3,34 @@
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 
-const zip = (a, b) => a.map((k, i) => [k, b[i]]);
+//const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 
+/*
 function range(size, startAt = 0) {
     return [...Array(size).keys()].map(i => i + startAt);
-}
+}*/
+function range(start, stop, step) {
+    if (typeof stop == 'undefined') {
+        // one param defined
+        stop = start;
+        start = 0;
+    }
+
+    if (typeof step == 'undefined') {
+        step = 1;
+    }
+
+    if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
+        return [];
+    }
+
+    var result = [];
+    for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
+        result.push(i);
+    }
+
+    return result;
+};
 
 var _vtos;
 
@@ -501,26 +524,10 @@ function value_d(b, who, d, run) {
 function value_board(b, who) {
     var cost, tcost;
     tcost = 0;
-    cost = value_d(b, who, H, zip(function () {
-        var _pj_a = [],
-            _pj_b = range(ROWS);
-        for (var _pj_c = 0, _pj_d = _pj_b.length; _pj_c < _pj_d; _pj_c += 1) {
-            var i = _pj_b[_pj_c];
-            _pj_a.push(i * COLS + H);
-        }
-        return _pj_a;
-    }.call(this), [COLS] * ROWS));
+    cost = value_d(b, who, H, [[1,COLS],[1*COLS+1,COLS],[2*COLS+1,COLS],[3*COLS+1,COLS],[4*COLS+1,COLS],[5*COLS+1,COLS]]);
     last_d[H] = cost;
     tcost += cost;
-    cost = value_d(b, who, V, zip(function () {
-        var _pj_a = [],
-            _pj_b = range(COLS);
-        for (var _pj_c = 0, _pj_d = _pj_b.length; _pj_c < _pj_d; _pj_c += 1) {
-            var i = _pj_b[_pj_c];
-            _pj_a.push(i + 1);
-        }
-        return _pj_a;
-    }.call(this), [ROWS] * COLS));
+    cost = value_d(b, who, V, [[1,ROWS], [2,ROWS], [3,ROWS], [4,ROWS], [5,ROWS], [6,ROWS], [7,ROWS]]);
     last_d[V] = cost;
     tcost += cost;
     cost = value_d(b, who, DR, [[15, 4], [8, 5], [1, 6], [2, 6], [3, 5], [4, 4]]);
@@ -563,7 +570,7 @@ function computer_play(b, who) {
     moves = push_moves.slice();
     return bestcol;
 }
-if (true) { //__name__ === "__main__") {
+if (false) { //__name__ === "__main__") {
     console.log("Play");
     b = new_board();
     print_board(b);
@@ -600,7 +607,7 @@ if (true) { //__name__ === "__main__") {
         } else {
             c = computer_play(b, who);
         }
-        move(b, Number.parseInt(c), who);
+        move(b, parseInt(c), who);
         print_board(b);
         x = value_board(b, who);
         console.log(x);
@@ -616,3 +623,115 @@ if (true) { //__name__ === "__main__") {
     }
 }
 //# sourceMappingURL=connect4.js.map
+
+
+/////////////////////////// Bangle ////////////////
+
+function render_board(b, offx, offy) {
+    var p,v;
+    g.setColor(0,0,1);
+    g.fillRect(1,1,176,176)
+    for (var r = 0; r < ROWS; r += 1) {
+        for (var c = 0; c < COLS; c += 1) {
+            p = c + r * COLS + 1;
+            v = get_p(b, p);
+            //g.drawCircleAA(c*4, r*4, 4);
+            if (v === -1) {
+              g.setColor(1,0,0);
+            } else if (v === 1) {
+              g.setColor(1,1,0);
+            } else {
+              g.setColor(0.5,0.5,0.5);
+            }
+            g.fillCircle(offx+c*24, (176-offy)-r*24, 8);
+            g.setColor(0,0,0);
+            g.drawCircle(offx+c*24, (176-offy)-r*24, 9);
+        }
+    }
+
+}
+
+
+function replay() {
+  E.showPrompt("Play again?").then(function(v) {
+    if (v) {
+      print("'Yes' chosen");
+      b = new_board();
+      render_board(b, 16, 32);
+      who = -1;
+    } else {
+      print("'No' chosen");
+      //todo exit
+    }
+});  
+}
+
+
+// place your const, vars, functions or classes here
+function play() {
+    console.log("Play");
+    b = new_board();
+    render_board(b, 16, 32);
+  
+    who = -1;
+    var offx = 16;
+    
+    Bangle.on('touch', function(zone, e) { 
+      console.log(e); 
+      c = Math.floor((e.x+offx) / 24);
+      console.log(c); 
+      if (who === -1 && c>0 && c < COLS+1) {
+        //c = 4;
+        move(b, parseInt(c), who);
+        render_board(b, offx, 32);
+        print_board(b);
+        
+        x=value_board(b, who);
+        if (Math.abs(x) > WIN_VALUE) {
+            console.log("won!");
+            E.showPrompt("You won", {title: "", buttons: {"Ok":true}}).then(function(v) {
+            //break;
+            who = 0;
+            //todo check board full?
+            replay();
+});
+        } else 
+          who = who * -1
+        
+        if (who === 1) {
+          c = computer_play(b, who);
+          move(b, parseInt(c), who);
+          render_board(b, offx, 32);
+          print_board(b);
+
+          x=value_board(b, who);
+          if (Math.abs(x) > WIN_VALUE) {
+              console.log("won!");
+              E.showPrompt("Computer won", {title: "", buttons: {"Ok":true}}).then(function(v) {
+              //break;
+              who = 0;
+              //todo check board full?
+              replay();
+});
+          } else 
+            who = who * -1
+        }
+      } 
+    });
+   
+}
+
+
+// special function to handle display switch on
+Bangle.on('lcdPower', (on) => {
+  if (on) {
+    // call your app function here
+    play();
+    // If you clear the screen, do Bangle.drawWidgets();
+  }
+});
+
+g.clear();
+// call your app function here
+
+play();
