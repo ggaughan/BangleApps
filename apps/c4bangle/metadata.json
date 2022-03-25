@@ -4,8 +4,9 @@
   "icon": "c4bangle.png",
   "version":"0.01",
   "description": "Connect 4",
-  "tags": "",
+  "tags": "game",
   "supports": ["BANGLEJS","BANGLEJS2"],
+  "allow_emulator": true,
   "storage": [
     {"name":"c4bangle.app.js","url":"c4bangle.js"},
     {"name":"c4bangle.img","url":"c4bangle-icon.js","evaluate":true}
