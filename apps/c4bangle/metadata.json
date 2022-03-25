@@ -1,0 +1,12 @@
+{ "id": "c4bangle",
+  "name": "Connect 4",
+  "shortName":"Connect 4",
+  "icon": "c4bangle.png",
+  "version":"0.01",
+  "description": "Connect 4",
+  "tags": "",
+  "storage": [
+    {"name":"c4bangle.app.js","url":"c4bangle.js"},
+    {"name":"c4bangle.img","url":"c4bangle-icon.js","evaluate":true}
+  ]
+}
