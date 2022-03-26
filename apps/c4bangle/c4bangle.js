@@ -30,7 +30,7 @@ function range(start, stop, step) {
     }
 
     return result;
-};
+}
 
 var _vtos;
 
@@ -86,7 +86,7 @@ moves = new Array();
 trace_value = new Array(); //[0] * COLS;
 for (var col = 0; col <= COLS; col++) {
     trace_value.push(0);
-};
+}
 last_d = {};
 trace_d = {};
 vtos = (_vtos = {}, _defineProperty(_vtos, -1, "O"), _defineProperty(_vtos, 0, "\xB7"), _defineProperty(_vtos, 1, "X"), _vtos);
