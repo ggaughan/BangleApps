@@ -663,13 +663,13 @@ function render_board(b, offx, offy) {
 function replay() {
   E.showPrompt("Play again?").then(function(v) {
     if (v) {
-      print("'Yes' chosen");
+      //print("'Yes' chosen");
       b = new_board();
       render_board(b, 16, 32);
       who = -1;
     } else {
-      print("'No' chosen");
-      //todo exit
+      //print("'No' chosen");
+      reset();
     }
 });  
 }
@@ -692,7 +692,8 @@ function play() {
         //c = 4;
         move(b, parseInt(c), who);
         render_board(b, offx, 32);
-        print_board(b);
+        g.flip();
+        //print_board(b);
         
         x=value_board(b, who);
         if (Math.abs(x) > WIN_VALUE) {
@@ -710,7 +711,7 @@ function play() {
           c = computer_play(b, who);
           move(b, parseInt(c), who);
           render_board(b, offx, 32);
-          print_board(b);
+          //print_board(b);
 
           x=value_board(b, who);
           if (Math.abs(x) > WIN_VALUE) {

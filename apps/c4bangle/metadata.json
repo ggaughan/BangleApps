@@ -2,6 +2,7 @@
   "name": "Connect 4",
   "shortName":"Connect 4",
   "icon": "c4bangle.png",
+  "screenshots": [{"url":"screenshot_c4bangle.png"}],
   "version":"0.01",
   "description": "Connect 4",
   "tags": "game",
