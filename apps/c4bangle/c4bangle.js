@@ -123,9 +123,9 @@ function print_board(b) {
             v = get_p(b, p);
             s = s + vtos[v];
         }
-        console.log(s);
+        //console.log(s);
     }
-    console.log("---");
+    //console.log("---");
 }
 function unproject_board(s) {
     /* debug */
@@ -484,6 +484,7 @@ function next_state(state, b, p, d, sc, cost, who) {
 function value_d(b, who, d, run) {
     var cost, l, p, r, sc, state, this_cost, v;
     cost = 0;
+    done_dir = false;
     for (var rl, _pj_c = 0, _pj_a = run, _pj_b = _pj_a.length; _pj_c < _pj_b; _pj_c += 1) {
         rl = _pj_a[_pj_c];
         var _ref = [rl[0], rl[1]];
@@ -497,6 +498,9 @@ function value_d(b, who, d, run) {
             v = get_next(b, p, d);
             if (d !== H && v === 0 && sc[RUNM1] + sc[RUNP1] + sc[MID] > 3) {
                 break;
+            }
+            if (d === H && v === 0 && sc[PRE]>l-1) {  
+                done_dir = True
             }
 
             var _next_state = next_state(state, b, p, d, sc, cost, who);
@@ -518,6 +522,10 @@ function value_d(b, who, d, run) {
         this_cost = _sc_cost18[1];
 
         cost += this_cost;
+
+        if (done_dir) {
+            break;
+        }
     }
     return cost;
 }
@@ -553,7 +561,7 @@ function computer_play(b, who) {
         x = value_board(b2, who);
         if (debug_options) {
             print_board(b2);
-            console.log("case", col + 1, x);
+            //console.log("case", col + 1, x);
         }
         trace_value[col] = x;
         if (who > 0 && x > best || who < 0 && x < best) {
@@ -563,15 +571,15 @@ function computer_play(b, who) {
         }
     }
     if (best !== cur) {
-        console.log("best", bestcol, best, "was", cur);
+        //console.log("best", bestcol, best, "was", cur);
     } else {
-        console.log("1");
+        //console.log("1");
     }
     moves = push_moves.slice();
     return bestcol;
 }
 if (false) { //__name__ === "__main__") {
-    console.log("Play");
+    //console.log("Play");
     b = new_board();
     print_board(b);
     who = -1;
@@ -669,7 +677,7 @@ function replay() {
 
 // place your const, vars, functions or classes here
 function play() {
-    console.log("Play");
+    //console.log("Play");
     b = new_board();
     render_board(b, 16, 32);
   
@@ -677,9 +685,9 @@ function play() {
     var offx = 16;
     
     Bangle.on('touch', function(zone, e) { 
-      console.log(e); 
+      //console.log(e); 
       c = Math.floor((e.x+offx) / 24);
-      console.log(c); 
+      //console.log(c); 
       if (who === -1 && c>0 && c < COLS+1) {
         //c = 4;
         move(b, parseInt(c), who);
@@ -688,7 +696,7 @@ function play() {
         
         x=value_board(b, who);
         if (Math.abs(x) > WIN_VALUE) {
-            console.log("won!");
+            //console.log("won!");
             E.showPrompt("You won", {title: "", buttons: {"Ok":true}}).then(function(v) {
             //break;
             who = 0;
@@ -706,7 +714,7 @@ function play() {
 
           x=value_board(b, who);
           if (Math.abs(x) > WIN_VALUE) {
-              console.log("won!");
+              //console.log("won!");
               E.showPrompt("Computer won", {title: "", buttons: {"Ok":true}}).then(function(v) {
               //break;
               who = 0;
