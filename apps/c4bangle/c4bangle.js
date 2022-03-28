@@ -168,13 +168,12 @@ function move(b, col, who) {
         if (v === 0) {
             set_p(b, p, who);
             moves.push([col, who]);
-            r = null;
-            break;
+            return r;
         }
         p = p + V;
         r += 1;
     }
-    return r;
+    return null;
 }
 function unmove(b) {
     /*
@@ -555,19 +554,21 @@ function computer_play(b, who) {
     for (var col = 0, _pj_a = COLS; col < _pj_a; col += 1) {
         b2 = b.slice();
         can = move(b2, col + 1, who);
-        if (can == null && bestcol == null) {
+        if (can !== null && bestcol == null) {
             bestcol = col
         }
-        x = value_board(b2, who);
-        if (debug_options) {
-            print_board(b2);
-            //console.log("case", col + 1, x);
-        }
-        trace_value[col] = x;
-        if (who > 0 && x > best || who < 0 && x < best) {
-            best = x;
-            bestcol = col + 1;
-            //trace_d = last_d.copy();
+        if (can !== null) {
+            x = value_board(b2, who);
+            if (debug_options) {
+                //print_board(b2);
+                //console.log("case", col + 1, x);
+            }
+            trace_value[col] = x;
+            if (who > 0 && x > best || who < 0 && x < best) {
+                best = x;
+                bestcol = col + 1;
+                //trace_d = last_d.copy();
+            }
         }
     }
     if (best !== cur) {
@@ -578,67 +579,15 @@ function computer_play(b, who) {
     moves = push_moves.slice();
     return bestcol;
 }
-if (false) { //__name__ === "__main__") {
-    //console.log("Play");
-    b = new_board();
-    print_board(b);
-    who = -1;
-    while (true) {
-        debug_count_sc_cost = 0;
-        if (false) { //who === -1) {
-            while (true) {
-                c = input("col (1..7):");
-                if (c === "?") {
-                    if (moves.length > 0) {
-                        for (var r = 0, _pj_a = COLS; r < _pj_a; r += 1) {
-                            console.log(r + 1, ":", trace_value[r]);
-                        }
-                        console.log(H, trace_d[H]);
-                        console.log(V, trace_d[V]);
-                        console.log(DR, trace_d[DR]);
-                        console.log(DL, trace_d[DL]);
-                    }
-                } else {
-                    if (c === "-") {
-                        if (moves.length > 1) {
-                            unmove(b);
-                            unmove(b);
-                            print_board(b);
-                            x = value_board(b, who);
-                            console.log(x);
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-        } else {
-            c = computer_play(b, who);
-        }
-        move(b, parseInt(c), who);
-        print_board(b);
-        x = value_board(b, who);
-        console.log(x);
-        console.log();
-        if (Math.abs(x) > WIN_VALUE) {
-            console.log("won!");
-            break;
-        }
-        who = who * -1;
-        if (debug) {
-            console.log("debug_count_sc_cost:", debug_count_sc_cost);
-        }
-    }
-}
 //# sourceMappingURL=connect4.js.map
 
 
 /////////////////////////// Bangle ////////////////
 
-function render_board(b, offx, offy) {
+function render_board(b, offx, offy, who, whoc) {
     var p,v;
     g.setColor(0,0,1);
-    g.fillRect(1,1,176,176)
+    g.fillRect(1,offy,176,176)
     for (var r = 0; r < ROWS; r += 1) {
         for (var c = 0; c < COLS; c += 1) {
             p = c + r * COLS + 1;
@@ -651,12 +600,17 @@ function render_board(b, offx, offy) {
             } else {
               g.setColor(0.5,0.5,0.5);
             }
-            g.fillCircle(offx+c*24, (176-offy)-r*24, 8);
+            g.fillCircle(offx+c*24, (176-offy/2)-r*24, 8);
             g.setColor(0,0,0);
-            g.drawCircle(offx+c*24, (176-offy)-r*24, 9);
+            g.drawCircle(offx+c*24, (176-offy/2)-r*24, 9);
         }
     }
 
+    g.setColor(1,1,1);
+    if (who === -1) {
+      //print(whoc);
+      g.drawRect(offx+whoc*24-16, offy+1, offx+whoc*24+16, 176-2);
+    }
 }
 
 
@@ -665,69 +619,88 @@ function replay() {
     if (v) {
       //print("'Yes' chosen");
       b = new_board();
-      render_board(b, 16, 32);
       who = -1;
+      whoc = 3;
+      render_board(b, 16, 28, who, whoc);
     } else {
       //print("'No' chosen");
+      //todo exit
       reset();
     }
 });  
 }
 
 
+
 // place your const, vars, functions or classes here
 function play() {
-    //console.log("Play");
+    console.log("Play");
     b = new_board();
-    render_board(b, 16, 32);
-  
     who = -1;
+    whoc = 3;
+    render_board(b, 16, 28, who, whoc);
+  
     var offx = 16;
-    
+
+    Bangle.on('swipe', function(direction) { 
+      console.log(direction); 
+      whoc = whoc + direction;
+      whoc = (whoc % COLS);
+      render_board(b, offx, 28, who, whoc);
+      //g.flip();
+    });    
+
     Bangle.on('touch', function(zone, e) { 
       //console.log(e); 
       c = Math.floor((e.x+offx) / 24);
       //console.log(c); 
       if (who === -1 && c>0 && c < COLS+1) {
-        //c = 4;
-        move(b, parseInt(c), who);
-        render_board(b, offx, 32);
+        whoc = c-1;
+        render_board(b, offx, 28, who, whoc);
+      }
+    });
+
+    setWatch(function() {
+      console.log("Pressed");
+      if (who === -1) {
+        move(b, whoc+1, who);
+        render_board(b, offx, 28, who*-1, whoc);
         g.flip();
         //print_board(b);
         
         x=value_board(b, who);
         if (Math.abs(x) > WIN_VALUE) {
-            //console.log("won!");
+            console.log("won!");
             E.showPrompt("You won", {title: "", buttons: {"Ok":true}}).then(function(v) {
-            //break;
-            who = 0;
-            //todo check board full?
-            replay();
-});
-        } else 
-          who = who * -1
-        
-        if (who === 1) {
-          c = computer_play(b, who);
-          move(b, parseInt(c), who);
-          render_board(b, offx, 32);
-          //print_board(b);
-
-          x=value_board(b, who);
-          if (Math.abs(x) > WIN_VALUE) {
-              //console.log("won!");
-              E.showPrompt("Computer won", {title: "", buttons: {"Ok":true}}).then(function(v) {
               //break;
               who = 0;
               //todo check board full?
               replay();
-});
+            });
+        } else 
+          who = who * -1;
+
+        if (who === 1) {
+          c = computer_play(b, who);
+          move(b, parseInt(c), who);
+          render_board(b, offx, 28, who*-1, whoc);
+          //print_board(b);
+
+          x=value_board(b, who);
+          if (Math.abs(x) > WIN_VALUE) {
+              console.log("won!");
+              E.showPrompt("Computer won", {title: "", buttons: {"Ok":true}}).then(function(v) {
+                //break;
+                who = 0;
+                //todo check board full?
+                replay();
+              });
           } else 
-            who = who * -1
-        }
-      } 
-    });
-   
+            who = who * -1;
+        } 
+      }
+    }, BTN, {edge:"rising", debounce:50, repeat:true});
+  
 }
 
 
@@ -741,6 +714,6 @@ Bangle.on('lcdPower', (on) => {
 });
 
 g.clear();
-// call your app function here
-
+Bangle.loadWidgets();
+Bangle.drawWidgets();
 play();
