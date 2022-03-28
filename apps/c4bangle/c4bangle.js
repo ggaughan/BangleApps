@@ -598,7 +598,7 @@ function render_board(b, offx, offy, who, whoc) {
             } else if (v === 1) {
               g.setColor(1,1,0);
             } else {
-              g.setColor(0.5,0.5,0.5);
+              g.setColor(0.4,0.4,0.4);
             }
             g.fillCircle(offx+c*24, (176-offy/2)-r*24, 8);
             g.setColor(0,0,0);
