@@ -4,7 +4,7 @@
   "icon": "c4bangle.png",
   "screenshots": [{"url":"screenshot_c4bangle.png"}],
   "version":"0.01",
-  "description": "Connect 4",
+  "description": "Connect 4. Swipe or tap to move cursor, press button to drop token.",
   "tags": "game",
   "supports": ["BANGLEJS","BANGLEJS2"],
   "allow_emulator": true,
