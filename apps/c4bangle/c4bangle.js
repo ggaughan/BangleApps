@@ -587,7 +587,7 @@ function computer_play(b, who) {
 function render_board(b, offx, offy, who, whoc) {
     var p,v;
     g.setColor(0,0,1);
-    g.fillRect(1,offy,176,176)
+    g.fillRect(0,offy,175,175)
     for (var r = 0; r < ROWS; r += 1) {
         for (var c = 0; c < COLS; c += 1) {
             p = c + r * COLS + 1;
@@ -609,7 +609,7 @@ function render_board(b, offx, offy, who, whoc) {
     g.setColor(1,1,1);
     if (who === -1) {
       //print(whoc);
-      g.drawRect(offx+whoc*24-16, offy+1, offx+whoc*24+16, 176-2);
+      g.drawRect(offx+whoc*24-16, offy+1, offx+whoc*24+16, 175-1);
     }
 }
 
@@ -634,7 +634,7 @@ function replay() {
 
 // place your const, vars, functions or classes here
 function play() {
-    console.log("Play");
+    //console.log("Play");
     b = new_board();
     who = -1;
     whoc = 3;
@@ -643,7 +643,7 @@ function play() {
     var offx = 16;
 
     Bangle.on('swipe', function(direction) { 
-      console.log(direction); 
+      //console.log(direction); 
       whoc = whoc + direction;
       whoc = (whoc % COLS);
       render_board(b, offx, 28, who, whoc);
@@ -661,7 +661,7 @@ function play() {
     });
 
     setWatch(function() {
-      console.log("Pressed");
+      //console.log("Pressed");
       if (who === -1) {
         move(b, whoc+1, who);
         render_board(b, offx, 28, who*-1, whoc);
@@ -670,7 +670,7 @@ function play() {
         
         x=value_board(b, who);
         if (Math.abs(x) > WIN_VALUE) {
-            console.log("won!");
+            //console.log("won!");
             E.showPrompt("You won", {title: "", buttons: {"Ok":true}}).then(function(v) {
               //break;
               who = 0;
@@ -688,7 +688,7 @@ function play() {
 
           x=value_board(b, who);
           if (Math.abs(x) > WIN_VALUE) {
-              console.log("won!");
+              //console.log("won!");
               E.showPrompt("Computer won", {title: "", buttons: {"Ok":true}}).then(function(v) {
                 //break;
                 who = 0;
