@@ -228,7 +228,7 @@ function sc_cost(sc, who) {
 
             if (sc[PRE] >= 1 || sc[POST] >= 1) {
                 if (!(sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1)) {
-                    c = MAX_VALUE;
+                    c = MAX_VALUE / 2;
                 }
             }
 
