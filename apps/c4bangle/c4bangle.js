@@ -228,7 +228,7 @@ function sc_cost(sc, who) {
 
             if (sc[PRE] >= 1 || sc[POST] >= 1) {
                 if (!(sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1)) {
-                    c = MAX_VALUE / 2;
+                    c = MAX_VALUE - 100000;
                 }
             }
 
@@ -244,7 +244,7 @@ function sc_cost(sc, who) {
         c = c * -1;
     }
     if (cheapen_ours) {
-        if (sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1) {
+        if (run <= 3 && (sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1)) {
             //c = c * 0.999;
             c = c * 0.9;
         }
