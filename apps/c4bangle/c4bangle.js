@@ -245,7 +245,8 @@ function sc_cost(sc, who) {
     }
     if (cheapen_ours) {
         if (sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1) {
-            c = c * 0.999;
+            //c = c * 0.999;
+            c = c * 0.9;
         }
     }
     cost += c;
@@ -255,7 +256,8 @@ function get_floor(b, p, d) {
     var fp, res;
     res = 1;
     if (d !== V) {
-        fp = p + d;
+        //fp = p + d;
+        fp = p;
         while (get_next(b, fp, -V) === 0) {
             res = res / 2;
             fp = fp + d;
