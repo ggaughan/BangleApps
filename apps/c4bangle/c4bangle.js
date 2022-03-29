@@ -222,10 +222,17 @@ function sc_cost(sc, who) {
         }
         if (run > 2 && (sc[PRE] > 0 || sc[MID] > 0 || sc[POST] > 0)) {
             c = 10000;
-            if (sc[PRE] > 1 && sc[POST] > 1) {
+            if (sc[PRE] >= 1 && sc[POST] >= 1) {
                 c = c * 10;
             }
-            if (!(sc[RUNM1] > 0 && who === -1) || sc[RUNP1] > 0 && who === 1) {
+
+            if (sc[PRE] >= 1 || sc[POST] >= 1) {
+                if (!(sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1)) {
+                    c = MAX_VALUE;
+                }
+            }
+
+            if (sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1) {
                 c = c / 10;
             }
         }
@@ -310,7 +317,7 @@ function next_state(state, b, p, d, sc, cost, who) {
                         }
                     } else {
                         state = POST;
-                        sc[state] += 1;
+                        //sc[state] += 1;
                     }
                 } else {
                     if (v === -1) {
@@ -356,7 +363,7 @@ function next_state(state, b, p, d, sc, cost, who) {
                             }
                         } else {
                             state = POST;
-                            sc[state] += 1;
+                            //sc[state] += 1;
                         }
                     } else {
                         if (v === 1) {
@@ -555,7 +562,7 @@ function computer_play(b, who) {
         b2 = b.slice();
         can = move(b2, col + 1, who);
         if (can !== null && bestcol == null) {
-            bestcol = col
+            bestcol = col + 1;
         }
         if (can !== null) {
             x = value_board(b2, who);
@@ -571,11 +578,11 @@ function computer_play(b, who) {
             }
         }
     }
-    if (best !== cur) {
+    //if (best !== cur) {
         //console.log("best", bestcol, best, "was", cur);
-    } else {
-        //console.log("1");
-    }
+    //} else {
+        ////console.log("1");
+    //}
     moves = push_moves.slice();
     return bestcol;
 }
@@ -682,6 +689,15 @@ function play() {
 
         if (who === 1) {
           c = computer_play(b, who);
+          if (c === null) {
+              //console.log("can't move => draw")
+              //break
+              E.showPrompt("Draw", {title: "", buttons: {"Ok":true}}).then(function(v) {
+                //break;
+                who = 0;
+                replay();
+              });
+          }
           move(b, parseInt(c), who);
           render_board(b, offx, 28, who*-1, whoc);
           //print_board(b);
