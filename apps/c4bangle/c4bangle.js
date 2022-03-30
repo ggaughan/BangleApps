@@ -618,7 +618,7 @@ function render_board(b, offx, offy, who, whoc) {
     g.setColor(1,1,1);
     if (who === -1) {
       //print(whoc);
-      g.drawRect(offx+whoc*24-16, offy+1, offx+whoc*24+16, 175-1);
+      g.drawRect(offx+whoc*24-12, offy+1, offx+whoc*24+12, 175-1);
     }
 }
 
