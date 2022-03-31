@@ -2,42 +2,12 @@
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-
-//const zip = (a, b) => a.map((k, i) => [k, b[i]]);
-
-/*
-function range(size, startAt = 0) {
-    return [...Array(size).keys()].map(i => i + startAt);
-}*/
-function range(start, stop, step) {
-    if (typeof stop == 'undefined') {
-        // one param defined
-        stop = start;
-        start = 0;
-    }
-
-    if (typeof step == 'undefined') {
-        step = 1;
-    }
-
-    if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
-        return [];
-    }
-
-    var result = [];
-    for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
-        result.push(i);
-    }
-
-    return result;
-}
-
 var _vtos;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var _pj;
-var COLS, DL, DR, H, MAX_VALUE, MID, MIN_VALUE, POST, PRE, ROWS, RUNM1, RUNP1, START, V, WIN_VALUE, b, c, cheapen_ours, debug, debug_count_sc_cost, debug_options, dir, last_d, moves, stov, trace_d, trace_value, vtos, who, x;
+var COLS, DL, DR, H, MAX_VALUE, MID, MIN_VALUE, POST, PRE, ROWS, RUNM1, RUNP1, START, V, WIN_VALUE, b, c, cheapen_ours, debug, debug_costs, debug_count_sc_cost, debug_options, dir, last_d, moves, stov, trace_d, trace_value, vtos, who, x;
 function _pj_snippets(container) {
     function _assert(comp, msg) {
         function PJAssertionError(message) {
@@ -64,12 +34,60 @@ _pj_snippets(_pj);
 /*
 Captain's Mistress
 
+source env/bin/activate
+pip install javascripthon
+#python -m metapensiero.pj -5 connect4.py
+pj -5 connect4.py
+
+
 next:
-try js version with UI on watch
+replace bangle
+value_board...
+if (Math.abs(x) > WIN_VALUE) {
+with
+if (has_won(b, who)) {
+OR
+keep value_board..
+if (x === MAX_VALUE or x === -MAX_VALUE) {
+
+regenerate js!
+sed!!
+
+fix win detection: test_dl_mix_failed10
+
+x narrow cursor
+show last move?
+
+x print board in local tests so can copy to unit tests
+x move most unit tests to 'next move' checks
+
+x cursor col
+early-out if >win etc.
+x flip + show 'thinking' (no cursor!)
+x widgets
+
+~ handle draw
+
+opt: re-use latest board value between goes
+if can is None; break - don't value if no move
+int8Array?
+inline C?
+assembly routines?
+
+animate drop
+cursor color - not simply white?
+
+show "win/draw" over board
+
+x show widgets
+x col cursor + (drag left/right or) click and button to move
+
+x try js version with UI on watch
 
 test more refined distance to floor: 0..N*/
-debug = true;
+debug = false;
 debug_options = false;
+debug_costs = false;
 debug_count_sc_cost = 0;
 cheapen_ours = true;
 ROWS = 6;
@@ -82,11 +100,8 @@ MAX_VALUE = 99999999;
 MIN_VALUE = -MAX_VALUE;
 WIN_VALUE = MAX_VALUE * 0.5;
 dir = [H, V, DL, DR];
-moves = new Array();
-trace_value = new Array(); //[0] * COLS;
-for (var col = 0; col <= COLS; col++) {
-    trace_value.push(0);
-}
+moves = [];
+trace_value = new Array(); for (var col = 0; col <= COLS; col++) trace_value.push(0);
 last_d = {};
 trace_d = {};
 vtos = (_vtos = {}, _defineProperty(_vtos, -1, "O"), _defineProperty(_vtos, 0, "\xB7"), _defineProperty(_vtos, 1, "X"), _vtos);
@@ -98,14 +113,99 @@ RUNP1 = 3;
 MID = 4;
 POST = 5;
 /*
+# todo sed:
+
+
+pre:
+#global moves
+
+post: - see build.sh
+Math.abs
+
+.slice() -> .slice()
+
+trace_d = last_d.copy() -> trace_d = Object.assign({}, last_d);
+
+Number.parseInt -> parseInt  //bangle
+
+remove trace_* (copy etc)
+
+if (false) { //__name__ === "__main__") {
+
+/ *
 function range(size, startAt = 0) {
 return [...Array(size).keys()].map(i => i + startAt);
 }
+* /
+function range(start, stop, step) {
+if (typeof stop == 'undefined') {
+// one param defined
+stop = start;
+start = 0;
+}
 
-reversed -> .reverse()*/
+if (typeof step == 'undefined') {
+step = 1;
+}
+
+if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
+return [];
+}
+
+var result = [];
+for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
+result.push(i);
+}
+
+return result;
+};
+
+
+/ * removed zip
+// -5
+const zip = (a, b) => a.map((k, i) => [k, b[i]]);
+function zip() {
+for (var i = 0; i < arguments.length; i++) {
+if (!arguments[i].length || !arguments.toString()) {
+return false;
+}
+if (i >= 1) {
+if (arguments[i].length !== arguments[i - 1].length) {
+return false;
+}
+}
+}
+var zipped = [];
+for (var j = 0; j < arguments[0].length; j++) {
+var toBeZipped = [];
+for (var k = 0; k < arguments.length; k++) {
+toBeZipped.push(arguments[k][j]);
+}
+zipped.push(toBeZipped);
+}
+return zipped;
+}
+* /
+
+= []; -> =new Array();
+
+trace_value = new Array(); //[0] * COLS;
+for (var col = 0; col <= COLS; col++)
+trace_value.push(0);
+};
+
+
+.append -> .push
+
+reversed -> .reverse()
+
+remove input
+
+console.log - comment out?
+print?*/
 function new_board() {
     var res;
-    res = new Array();
+    res = [];
     for (var r = 0, _pj_a = ROWS; r < _pj_a; r += 1) {
         for (var c = 0, _pj_b = COLS; c < _pj_b; c += 1) {
             res.push(0);
@@ -123,15 +223,15 @@ function print_board(b) {
             v = get_p(b, p);
             s = s + vtos[v];
         }
-        //console.log(s);
+        console.log(s);
     }
-    //console.log("---");
+    console.log("---");
 }
 function unproject_board(s) {
     /* debug */
     var l, res, ss;
     ss = s.strip().splitlines();
-    res = new Array();
+    res = [];
     for (var r, _pj_c = 0, _pj_a = reversed(ss), _pj_b = _pj_a.length; _pj_c < _pj_b; _pj_c += 1) {
         r = _pj_a[_pj_c];
         l = r.strip();
@@ -143,7 +243,7 @@ function unproject_board(s) {
     return res;
 }
 function get_p(b, p) {
-    _pj._assert(p >= 0 && p <= ROWS * COLS, "Out of range ");
+    _pj._assert(p > 0 && p <= ROWS * COLS, "Out of range ");
     return b[p - 1];
 }
 function set_p(b, p, who) {
@@ -199,7 +299,6 @@ function unmove(b) {
 }
 function sc_cost(sc, who) {
     var cost, run;
-    debug_count_sc_cost = debug_count_sc_cost + 1;
     cost = 0;
     _pj._assert(sc[RUNM1] === 0 || sc[RUNP1] === 0, "Both M1 and P1 have counts");
     run = sc[RUNM1] + sc[RUNP1];
@@ -225,38 +324,41 @@ function sc_cost(sc, who) {
             if (sc[PRE] >= 1 && sc[POST] >= 1) {
                 c = c * 10;
             }
-
             if (sc[PRE] >= 1 || sc[POST] >= 1) {
                 if (!(sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1)) {
                     c = MAX_VALUE - 100000;
                 }
             }
-
             if (sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1) {
                 c = c / 10;
             }
         }
-        if (run > 3 && sc[MID] === 0) {
+        if (run > 3 && sc[MID] === 0 && (who === -1 && sc[RUNM1] || who === 1 && sc[RUNP1])) {
             c = MAX_VALUE;
+            if (sc[RUNM1] > 0) {
+                c = c * -1;
+            }
+            return [[0, 0, 0, 0, 0, 0], c];
         }
     }
     if (sc[RUNM1] > 0) {
         c = c * -1;
     }
     if (cheapen_ours) {
-        if (run <= 3 && (sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1)) {
-            //c = c * 0.999;
+        if (run <= 3 && sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1) {
             c = c * 0.9;
         }
     }
     cost += c;
+    if (debug_costs) {
+        console.log(sc, run, cost);
+    }
     return [[0, 0, 0, 0, 0, 0], cost];
 }
 function get_floor(b, p, d) {
     var fp, res;
     res = 1;
     if (d !== V) {
-        //fp = p + d;
         fp = p;
         while (get_next(b, fp, -V) === 0) {
             res = res / 2;
@@ -308,6 +410,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                     sc = _sc_cost2[0];
                     this_cost = _sc_cost2[1];
 
+                    if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+                        return [state, sc, this_cost];
+                    }
                     cost += this_cost;
                     state = START;
                 }
@@ -319,7 +424,6 @@ function next_state(state, b, p, d, sc, cost, who) {
                         }
                     } else {
                         state = POST;
-                        //sc[state] += 1;
                     }
                 } else {
                     if (v === -1) {
@@ -338,6 +442,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                             sc = _sc_cost4[0];
                             this_cost = _sc_cost4[1];
 
+                            if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+                                return [state, sc, this_cost];
+                            }
                             cost += this_cost;
                             state = RUNP1;
                             sc[state] += 1;
@@ -354,6 +461,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                         sc = _sc_cost6[0];
                         this_cost = _sc_cost6[1];
 
+                        if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+                            return [state, sc, this_cost];
+                        }
                         cost += this_cost;
                         state = START;
                     }
@@ -365,7 +475,6 @@ function next_state(state, b, p, d, sc, cost, who) {
                             }
                         } else {
                             state = POST;
-                            //sc[state] += 1;
                         }
                     } else {
                         if (v === 1) {
@@ -384,6 +493,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                                 sc = _sc_cost8[0];
                                 this_cost = _sc_cost8[1];
 
+                                if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+                                    return [state, sc, this_cost];
+                                }
                                 cost += this_cost;
                                 state = RUNM1;
                                 sc[state] += 1;
@@ -417,6 +529,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                                             sc = _sc_cost10[0];
                                             this_cost = _sc_cost10[1];
 
+                                            if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+                                                return [state, sc, this_cost];
+                                            }
                                             cost += this_cost;
                                             sc[PRE] = tc;
                                             state = RUNP1;
@@ -432,6 +547,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                                                 sc = _sc_cost12[0];
                                                 this_cost = _sc_cost12[1];
 
+                                                if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+                                                    return [state, sc, this_cost];
+                                                }
                                                 cost += this_cost;
                                                 sc[PRE] = tc;
                                                 state = RUNM1;
@@ -459,6 +577,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                                     sc = _sc_cost14[0];
                                     this_cost = _sc_cost14[1];
 
+                                    if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+                                        return [state, sc, this_cost];
+                                    }
                                     cost += this_cost;
                                     sc[PRE] = tc;
                                     state = RUNM1;
@@ -474,6 +595,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                                         sc = _sc_cost16[0];
                                         this_cost = _sc_cost16[1];
 
+                                        if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+                                            return [state, sc, this_cost];
+                                        }
                                         cost += this_cost;
                                         sc[PRE] = tc;
                                         state = RUNP1;
@@ -490,7 +614,7 @@ function next_state(state, b, p, d, sc, cost, who) {
     return [state, sc, cost];
 }
 function value_d(b, who, d, run) {
-    var cost, l, p, r, sc, state, this_cost, v;
+    var cost, done_dir, l, p, r, sc, state, this_cost, v;
     cost = 0;
     done_dir = false;
     for (var rl, _pj_c = 0, _pj_a = run, _pj_b = _pj_a.length; _pj_c < _pj_b; _pj_c += 1) {
@@ -507,8 +631,8 @@ function value_d(b, who, d, run) {
             if (d !== H && v === 0 && sc[RUNM1] + sc[RUNP1] + sc[MID] > 3) {
                 break;
             }
-            if (d === H && v === 0 && sc[PRE]>l-1) {  
-                done_dir = True
+            if (d === H && v === 0 && sc[PRE] > l - 1) {
+                done_dir = true;
             }
 
             var _next_state = next_state(state, b, p, d, sc, cost, who);
@@ -529,33 +653,66 @@ function value_d(b, who, d, run) {
         sc = _sc_cost18[0];
         this_cost = _sc_cost18[1];
 
+        if (this_cost === MAX_VALUE || this_cost === -MAX_VALUE) {
+            return this_cost;
+        }
         cost += this_cost;
-
         if (done_dir) {
             break;
         }
     }
     return cost;
 }
+function has_won(b, who) {
+    x = value_board(b, who);
+    if (x === MAX_VALUE || x === -MAX_VALUE) {
+        return true;
+    }
+    return false;
+}
 function value_board(b, who) {
     var cost, tcost;
     tcost = 0;
-    cost = value_d(b, who, H, [[1,COLS],[1*COLS+1,COLS],[2*COLS+1,COLS],[3*COLS+1,COLS],[4*COLS+1,COLS],[5*COLS+1,COLS]]);
+    if (debug_costs) {
+        console.log("H");
+    }
+    cost = value_d(b, who, H, [[1, COLS], [1 * COLS + 1, COLS], [2 * COLS + 1, COLS], [3 * COLS + 1, COLS], [4 * COLS + 1, COLS], [5 * COLS + 1, COLS]]);
+    if (cost === MAX_VALUE || cost === -MAX_VALUE) {
+        return cost;
+    }
     last_d[H] = cost;
     tcost += cost;
-    cost = value_d(b, who, V, [[1,ROWS], [2,ROWS], [3,ROWS], [4,ROWS], [5,ROWS], [6,ROWS], [7,ROWS]]);
+    if (debug_costs) {
+        console.log("V");
+    }
+    cost = value_d(b, who, V, [[1, ROWS], [2, ROWS], [3, ROWS], [4, ROWS], [5, ROWS], [6, ROWS], [7, ROWS]]);
+    if (cost === MAX_VALUE || cost === -MAX_VALUE) {
+        return cost;
+    }
     last_d[V] = cost;
     tcost += cost;
+    if (debug_costs) {
+        console.log("DR");
+    }
     cost = value_d(b, who, DR, [[15, 4], [8, 5], [1, 6], [2, 6], [3, 5], [4, 4]]);
+    if (cost === MAX_VALUE || cost === -MAX_VALUE) {
+        return cost;
+    }
     last_d[DR] = cost;
     tcost += cost;
+    if (debug_costs) {
+        console.log("DL");
+    }
     cost = value_d(b, who, DL, [[20, 4], [14, 5], [7, 6], [6, 6], [5, 5], [4, 4]]);
+    if (cost === MAX_VALUE || cost === -MAX_VALUE) {
+        return cost;
+    }
     last_d[DL] = cost;
     tcost += cost;
     return tcost;
 }
 function computer_play(b, who) {
-    var b2, best, bestcol, cur, push_moves, can;
+    var b2, best, bestcol, can, cur, push_moves;
     cur = value_board(b, who);
     best = cur;
     bestcol = null;
@@ -563,35 +720,100 @@ function computer_play(b, who) {
     for (var col = 0, _pj_a = COLS; col < _pj_a; col += 1) {
         b2 = b.slice();
         can = move(b2, col + 1, who);
-        if (can !== null && bestcol == null) {
+        if (can !== null && bestcol === null) {
             bestcol = col + 1;
         }
         if (can !== null) {
             x = value_board(b2, who);
             if (debug_options) {
-                //print_board(b2);
-                //console.log("case", col + 1, x);
+                print_board(b2);
+                console.log("case", col + 1, x);
             }
             trace_value[col] = x;
-            if (who > 0 && x > best || who < 0 && x < best) {
+            if (x === MAX_VALUE || x === -MAX_VALUE || who > 0 && x > best || who < 0 && x < best) {
                 best = x;
                 bestcol = col + 1;
-                //trace_d = last_d.copy();
+                if (x === MAX_VALUE || x === -MAX_VALUE) {
+                    break;
+                }
             }
         }
     }
-    //if (best !== cur) {
-        //console.log("best", bestcol, best, "was", cur);
-    //} else {
-        ////console.log("1");
-    //}
+    console.log("best", bestcol, best, "was", cur);
     moves = push_moves.slice();
     return bestcol;
 }
+if (false) {
+    console.log("Play");
+    b = new_board();
+    print_board(b);
+    who = -1;
+    while (true) {
+        if (who === -1) {
+            while (true) {
+                c = input("col (1..7):");
+                if (c === "?") {
+                    if (moves.length > 0) {
+                        for (var r = 0, _pj_a = COLS; r < _pj_a; r += 1) {
+                            console.log(r + 1, ":", trace_value[r]);
+                        }
+                        console.log(H, trace_d[H]);
+                        console.log(V, trace_d[V]);
+                        console.log(DR, trace_d[DR]);
+                        console.log(DL, trace_d[DL]);
+                    }
+                } else {
+                    if (c === "-") {
+                        if (moves.length > 1) {
+                            unmove(b);
+                            unmove(b);
+                            print_board(b);
+                            x = value_board(b, who);
+                            console.log(x);
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+        } else {
+            c = computer_play(b, who);
+        }
+        move(b, parseInt(c), who);
+        print_board(b);
+        x = value_board(b, who);
+        console.log(x);
+        console.log();
+        if (Math.abs(x) > WIN_VALUE) {
+            console.log("won!");
+            break;
+        }
+        who = who * -1;
+    }
+}
 //# sourceMappingURL=connect4.js.map
-
-
 /////////////////////////// Bangle ////////////////
+
+// todo move/replace: suspect not the best
+function range(start, stop, step) {
+    if (typeof stop == 'undefined') {
+        // one param defined
+        stop = start;
+        start = 0;
+    }
+    if (typeof step == 'undefined') {
+        step = 1;
+    }
+    if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
+        return [];
+    }
+    var result = [];
+    for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
+        result.push(i);
+    }
+    return result;
+};
+
 
 function render_board(b, offx, offy, who, whoc) {
     var p,v;
@@ -677,8 +899,10 @@ function play() {
         g.flip();
         //print_board(b);
         
+        // todo replace value+if with: if has_won(b, who)
         x=value_board(b, who);
-        if (Math.abs(x) > WIN_VALUE) {
+        //if (Math.abs(x) > WIN_VALUE) {
+        if (x === MAX_VALUE || x === -MAX_VALUE) {
             //console.log("won!");
             E.showPrompt("You won", {title: "", buttons: {"Ok":true}}).then(function(v) {
               //break;
@@ -704,8 +928,10 @@ function play() {
           render_board(b, offx, 28, who*-1, whoc);
           //print_board(b);
 
+          // todo replace value+if with: if has_won(b, who)
           x=value_board(b, who);
-          if (Math.abs(x) > WIN_VALUE) {
+          //if (Math.abs(x) > WIN_VALUE) {
+          if (x === MAX_VALUE || x === -MAX_VALUE) {
               //console.log("won!");
               E.showPrompt("Computer won", {title: "", buttons: {"Ok":true}}).then(function(v) {
                 //break;
