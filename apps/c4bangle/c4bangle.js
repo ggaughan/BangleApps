@@ -41,7 +41,22 @@ pj -5 connect4.py
 
 
 next:
-replace bangle
+tidy this preamble
+
+opt: re-use latest board value between goes
+if can is None; break - don't value if no move
+int8Array?
+inline C?
+assembly routines?
+
+
+on win:
+show notice + ok
+back to show board and highlight 4 in a row
+wait for btn
+ask to play again?
+
+x replace bangle
 value_board...
 if (Math.abs(x) > WIN_VALUE) {
 with
@@ -50,10 +65,10 @@ OR
 keep value_board..
 if (x === MAX_VALUE or x === -MAX_VALUE) {
 
-regenerate js!
-sed!!
+x regenerate js!
+x sed!!
 
-fix win detection: test_dl_mix_failed10
+x fix win detection: test_dl_mix_failed10
 
 x narrow cursor
 show last move?
@@ -67,12 +82,6 @@ x flip + show 'thinking' (no cursor!)
 x widgets
 
 ~ handle draw
-
-opt: re-use latest board value between goes
-if can is None; break - don't value if no move
-int8Array?
-inline C?
-assembly routines?
 
 animate drop
 cursor color - not simply white?
@@ -192,7 +201,7 @@ return zipped;
 trace_value = new Array(); //[0] * COLS;
 for (var col = 0; col <= COLS; col++)
 trace_value.push(0);
-};
+
 
 
 .append -> .push
@@ -324,6 +333,9 @@ function sc_cost(sc, who) {
             if (sc[PRE] >= 1 && sc[POST] >= 1) {
                 c = c * 10;
             }
+            if (sc[PRE] + sc[MID] + sc[POST] < 1) {
+                c = c / 2;
+            }
             if (sc[PRE] >= 1 || sc[POST] >= 1) {
                 if (!(sc[RUNM1] > 0 && who === -1 || sc[RUNP1] > 0 && who === 1)) {
                     c = MAX_VALUE - 100000;
@@ -403,6 +415,8 @@ function next_state(state, b, p, d, sc, cost, who) {
         } else {
             if (state === RUNM1) {
                 if (sc[state] + sc[MID] > 3) {
+                    sc[state] += 1;
+
                     var _sc_cost = sc_cost(sc, who);
 
                     var _sc_cost2 = _slicedToArray(_sc_cost, 2);
@@ -415,12 +429,13 @@ function next_state(state, b, p, d, sc, cost, who) {
                     }
                     cost += this_cost;
                     state = START;
+                    return [state, sc, this_cost];
                 }
                 if (v === 0) {
                     if (sc[MID] === 0 && sc[state] < 3) {
                         state = MID;
                         if (false) {} else {
-                            sc[state] += 1;
+                            sc[state] += get_floor(b, p + d, d);
                         }
                     } else {
                         state = POST;
@@ -454,6 +469,8 @@ function next_state(state, b, p, d, sc, cost, who) {
             } else {
                 if (state === RUNP1) {
                     if (sc[state] + sc[MID] > 3) {
+                        sc[state] += 1;
+
                         var _sc_cost5 = sc_cost(sc, who);
 
                         var _sc_cost6 = _slicedToArray(_sc_cost5, 2);
@@ -466,12 +483,13 @@ function next_state(state, b, p, d, sc, cost, who) {
                         }
                         cost += this_cost;
                         state = START;
+                        return [state, sc, this_cost];
                     }
                     if (v === 0) {
                         if (sc[MID] === 0 && sc[state] < 3) {
                             state = MID;
                             if (false) {} else {
-                                sc[state] += 1;
+                                sc[state] += get_floor(b, p + d, d);
                             }
                         } else {
                             state = POST;
@@ -784,7 +802,7 @@ if (false) {
         x = value_board(b, who);
         console.log(x);
         console.log();
-        if (Math.abs(x) > WIN_VALUE) {
+        if (abs(x) > WIN_VALUE) {
             console.log("won!");
             break;
         }
