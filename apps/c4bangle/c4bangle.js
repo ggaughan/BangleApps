@@ -429,7 +429,7 @@ function next_state(state, b, p, d, sc, cost, who) {
                     }
                     cost += this_cost;
                     state = START;
-                    return [state, sc, this_cost];
+                    return [state, sc, cost];
                 }
                 if (v === 0) {
                     if (sc[MID] === 0 && sc[state] < 3) {
@@ -439,6 +439,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                         }
                     } else {
                         state = POST;
+                        if (sc[RUNM1] === 3) {
+                            sc[state] += get_floor(b, p + d, d);
+                        }
                     }
                 } else {
                     if (v === -1) {
@@ -483,7 +486,7 @@ function next_state(state, b, p, d, sc, cost, who) {
                         }
                         cost += this_cost;
                         state = START;
-                        return [state, sc, this_cost];
+                        return [state, sc, cost];
                     }
                     if (v === 0) {
                         if (sc[MID] === 0 && sc[state] < 3) {
@@ -493,6 +496,9 @@ function next_state(state, b, p, d, sc, cost, who) {
                             }
                         } else {
                             state = POST;
+                            if (sc[RUNP1] === 3) {
+                                sc[state] += get_floor(b, p + d, d);
+                            }
                         }
                     } else {
                         if (v === 1) {
@@ -661,6 +667,9 @@ function value_d(b, who, d, run) {
             sc = _next_state2[1];
             cost = _next_state2[2];
 
+            if (cost === MAX_VALUE || cost === -MAX_VALUE) {
+                return cost;
+            }
             p += d;
         }
 
@@ -757,7 +766,7 @@ function computer_play(b, who) {
             }
         }
     }
-    console.log("best", bestcol, best, "was", cur);
+    //console.log("best", bestcol, best, "was", cur);
     moves = push_moves.slice();
     return bestcol;
 }
@@ -912,24 +921,25 @@ function play() {
     setWatch(function() {
       //console.log("Pressed");
       if (who === -1) {
-        move(b, whoc+1, who);
-        render_board(b, offx, 28, who*-1, whoc);
-        g.flip();
-        //print_board(b);
-        
-        // todo replace value+if with: if has_won(b, who)
-        x=value_board(b, who);
-        //if (Math.abs(x) > WIN_VALUE) {
-        if (x === MAX_VALUE || x === -MAX_VALUE) {
-            //console.log("won!");
-            E.showPrompt("You won", {title: "", buttons: {"Ok":true}}).then(function(v) {
-              //break;
-              who = 0;
-              //todo check board full?
-              replay();
-            });
-        } else 
-          who = who * -1;
+        if (move(b, whoc+1, who) != null) {
+            render_board(b, offx, 28, who*-1, whoc);
+            g.flip();
+            //print_board(b);
+            
+            // todo replace value+if with: if has_won(b, who)
+            x=value_board(b, who);
+            //if (Math.abs(x) > WIN_VALUE) {
+            if (x === MAX_VALUE || x === -MAX_VALUE) {
+                //console.log("won!");
+                E.showPrompt("You won", {title: "", buttons: {"Ok":true}}).then(function(v) {
+                //break;
+                who = 0;
+                //todo check board full?
+                replay();
+                });
+            } else 
+            who = who * -1;
+        } // else fail (full) - try again
 
         if (who === 1) {
           c = computer_play(b, who);
